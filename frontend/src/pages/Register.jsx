@@ -27,14 +27,20 @@ function Register() {
     setLoading(true);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+      });
 
-      // Mock successful registration (since there's no backend for this project yet)
-      const isSuccess = true; 
+      const text = await response.text();
+      let data = null;
+      try {
+        data = JSON.parse(text);
+      } catch {}
 
-      if (!isSuccess) {
-        throw new Error('Registration failed. Please try again.');
+      if (!response.ok) {
+        throw new Error(data?.message || 'Registration failed');
       }
 
       navigate('/login');

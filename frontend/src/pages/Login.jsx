@@ -23,14 +23,27 @@ function Login() {
     setLoading(true);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
 
-      // Mock successful login (since there's no backend for this project yet)
-      const mockUser = { name: form.email.split('@')[0], email: form.email };
-      const mockToken = 'mock-jwt-token-123';
+      const text = await response.text();
+      let data = null;
+      try {
+        data = JSON.parse(text);
+      } catch {}
 
-      login(mockUser, mockToken);
+      if (!response.ok) {
+        throw new Error(data?.message || 'Login failed');
+      }
+
+      if (!data?.token || !data?.user) {
+        throw new Error('Invalid response from server.');
+      }
+
+      login(data.user, data.token);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

@@ -3,27 +3,22 @@ import Navbar from '../components/Navbar';
 import MonitorCard from '../components/MonitorCard';
 import LatencyChart from '../components/LatencyChart';
 
-// Simulated services for demo purposes
 const INITIAL_SERVICES = [
-  { id: 1, title: 'API Gateway', status: 'up', latency: 42, uptime: 99.98 },
-  { id: 2, title: 'Auth Service', status: 'up', latency: 18, uptime: 100 },
-  { id: 3, title: 'Database (Primary)', status: 'degraded', latency: 210, uptime: 97.3 },
-  { id: 4, title: 'CDN / Static Assets', status: 'up', latency: 8, uptime: 99.99 },
-  { id: 5, title: 'Payment Service', status: 'down', latency: 0, uptime: 94.1 },
-  { id: 6, title: 'Notification Worker', status: 'up', latency: 65, uptime: 99.5 },
+  { id: 1, title: 'API Gateway', target: 'api.example.com', status: 'up', latency: 42, uptime: 99.98 },
+  { id: 2, title: 'Auth Service', target: 'auth.example.com', status: 'up', latency: 18, uptime: 100 },
 ];
 
-/**
- * Dashboard – main monitoring view showing service cards and latency charts.
- */
 function Dashboard() {
   const [services, setServices] = useState(INITIAL_SERVICES);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newMonitor, setNewMonitor] = useState({ title: '', target: '' });
+
   const [latencyHistory, setLatencyHistory] = useState(() =>
     Object.fromEntries(INITIAL_SERVICES.map(s => [s.id, Array(20).fill(s.latency)]))
   );
   const [lastChecked, setLastChecked] = useState(new Date().toISOString());
 
-  // Simulate real-time updates every 3 seconds
+  // Simulation logic for real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       setServices(prev =>
@@ -39,7 +34,7 @@ function Dashboard() {
         services.forEach(s => {
           if (s.status !== 'down') {
             const history = [...(prev[s.id] || []), s.latency];
-            next[s.id] = history.slice(-30); // keep last 30 data points
+            next[s.id] = history.slice(-30);
           }
         });
         return next;
@@ -51,43 +46,69 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, [services]);
 
+  const handleAddMonitor = (e) => {
+    e.preventDefault();
+    const id = Date.now();
+    const createdMonitor = {
+      id,
+      title: newMonitor.title,
+      target: newMonitor.target,
+      status: 'up',
+      latency: 0,
+      uptime: 100
+    };
+
+    setServices([...services, createdMonitor]);
+    setLatencyHistory(prev => ({ ...prev, [id]: Array(20).fill(0) }));
+    setNewMonitor({ title: '', target: '' });
+    setIsModalOpen(false);
+  };
+
   const upCount = services.filter(s => s.status === 'up').length;
   const downCount = services.filter(s => s.status === 'down').length;
   const degradedCount = services.filter(s => s.status === 'degraded').length;
 
   return (
-    <div className="min-h-screen bg-[#0f1117]">
+    <div className="min-h-screen bg-[#CFD8DC] relative">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Page header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">System Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Last updated: {new Date(lastChecked).toLocaleTimeString()}
-          </p>
+        {/* Header with Add Button */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-[#B0BEC5] pb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-[#37474F]">Infrastructure Health</h1>
+            <p className="text-[#546E7A] text-sm mt-1">
+              Last sync: {new Date(lastChecked).toLocaleTimeString()}
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-[#37474F] text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-[#546E7A] transition-all active:scale-95"
+          >
+            + Add New Monitor
+          </button>
         </div>
 
         {/* Summary badges */}
         <div className="flex flex-wrap gap-3 mb-8">
-          <span className="flex items-center gap-1.5 bg-green-500/10 text-green-400 border border-green-500/30 text-sm font-medium px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" />
+          <span className="flex items-center gap-2 bg-white border border-[#90A4AE] text-[#37474F] text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
             {upCount} Operational
           </span>
-          <span className="flex items-center gap-1.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 text-sm font-medium px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
+          <span className="flex items-center gap-2 bg-white border border-[#90A4AE] text-[#37474F] text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
             {degradedCount} Degraded
           </span>
-          <span className="flex items-center gap-1.5 bg-red-500/10 text-red-400 border border-red-500/30 text-sm font-medium px-3 py-1.5 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
-            {downCount} Down
+          <span className="flex items-center gap-2 bg-white border border-[#90A4AE] text-[#37474F] text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            {downCount} Offline
           </span>
         </div>
 
-        {/* Monitor cards grid */}
-        <section id="monitor-cards" className="mb-10">
-          <h2 className="text-lg font-semibold text-gray-300 mb-4">Services</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Grid Section */}
+        <section className="mb-12">
+          <h2 className="text-sm font-black text-[#546E7A] mb-6 uppercase tracking-[0.2em]">Service Monitors</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map(service => (
               <MonitorCard
                 key={service.id}
@@ -101,23 +122,80 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Latency charts */}
-        <section id="latency-charts">
-          <h2 className="text-lg font-semibold text-gray-300 mb-4">Latency Trends</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {services
-              .filter(s => s.status !== 'down')
-              .map(service => (
+        {/* Chart Section */}
+        <section>
+          <h2 className="text-sm font-black text-[#546E7A] mb-6 uppercase tracking-[0.2em]">Latency History</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {services.filter(s => s.status !== 'down').map(service => (
+              <div key={service.id} className="bg-white p-6 rounded-2xl border border-[#B0BEC5] shadow-sm">
+                <div className="mb-4">
+                  <h4 className="text-[#37474F] font-bold">{service.title}</h4>
+                  <p className="text-[#90A4AE] text-xs font-medium">{service.target}</p>
+                </div>
                 <LatencyChart
-                  key={service.id}
                   label={service.title}
                   data={latencyHistory[service.id] || []}
-                  color={service.status === 'degraded' ? '#f59e0b' : '#6366f1'}
+                  color={service.status === 'degraded' ? '#f59e0b' : '#546E7A'}
                 />
-              ))}
+              </div>
+            ))}
           </div>
         </section>
       </main>
+
+      {/* --- ADD MONITOR MODAL --- */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#37474F]/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-[#B0BEC5] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-8">
+              <h2 className="text-2xl font-black text-[#37474F] mb-2">New Monitor</h2>
+              <p className="text-[#546E7A] text-sm mb-6 font-medium">Track a new IP address or URL.</p>
+
+              <form onSubmit={handleAddMonitor} className="space-y-5">
+                <div>
+                  <label className="block text-[10px] font-black text-[#90A4AE] uppercase tracking-widest mb-2 ml-1">Friendly Name</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. AWS Production Server"
+                    className="w-full px-4 py-3 rounded-xl bg-[#CFD8DC]/20 border border-[#B0BEC5] text-[#37474F] outline-none focus:ring-2 focus:ring-[#546E7A]"
+                    value={newMonitor.title}
+                    onChange={(e) => setNewMonitor({ ...newMonitor, title: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black text-[#90A4AE] uppercase tracking-widest mb-2 ml-1">Target (IP or URL)</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. 13.233.10.254"
+                    className="w-full px-4 py-3 rounded-xl bg-[#CFD8DC]/20 border border-[#B0BEC5] text-[#37474F] outline-none focus:ring-2 focus:ring-[#546E7A]"
+                    value={newMonitor.target}
+                    onChange={(e) => setNewMonitor({ ...newMonitor, target: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-[#546E7A] hover:bg-gray-100 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-3 rounded-xl font-bold bg-[#37474F] text-white shadow-lg hover:bg-[#546E7A] transition-all"
+                  >
+                    Start Tracking
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
