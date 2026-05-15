@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* New light slate palette */
+    --color-bg-primary: #CFD8DC;   /* Pale Blue-Gray – page background */
+    --color-bg-card: #ffffff;      /* White – card surfaces */
+    --color-border-light: #B0BEC5; /* Light border */
+    --color-border-mid: #90A4AE;   /* Mid border / muted icons */
+    --color-text-dark: #37474F;    /* Dark text / headings */
+    --color-text-muted: #546E7A;   /* Muted text / labels */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+  }
+
+  body {
+    @apply bg-[#CFD8DC] text-[#37474F] font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Light card – white surface with slate border */
+  .card {
+    @apply bg-white rounded-2xl border border-[#B0BEC5] shadow-sm;
+  }
+
+  /* Primary button – dark slate */
+  .btn-primary {
+    @apply bg-[#37474F] hover:bg-[#546E7A] text-white font-bold py-2 px-4 rounded-xl transition-all duration-200 shadow-md shadow-[#37474F]/20 active:scale-[0.98];
+  }
+
+  /* Input field – light slate style */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl bg-[#CFD8DC]/20 border border-[#B0BEC5] text-[#37474F]
+           placeholder:text-[#90A4AE] focus:outline-none focus:ring-2 focus:ring-[#546E7A]
+           focus:border-transparent transition-all duration-200;
+  }
+}
