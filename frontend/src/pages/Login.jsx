@@ -23,20 +23,34 @@ function Login() {
     setLoading(true);
 
     try {
-      // TODO: Replace with real API call
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Login failed');
+      // Safely read body once — it may be empty or non-JSON
+      const text = await response.text();
+      let data = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        // Body was not valid JSON
       }
 
-      const { user, token } = await response.json();
-      login(user, token);
+      if (!response.ok) {
+        const message = data?.message || data?.error
+          || text.trim().slice(0, 120)
+          || response.statusText
+          || 'Login failed';
+        throw new Error(message);
+      }
+
+      if (!data?.token || !data?.user) {
+        throw new Error('Invalid response from server. Please try again.');
+      }
+
+      login(data.user, data.token);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

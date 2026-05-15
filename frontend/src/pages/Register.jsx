@@ -27,7 +27,6 @@ function Register() {
     setLoading(true);
 
     try {
-      // TODO: Replace with real API call
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,8 +34,17 @@ function Register() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Registration failed');
+        // Safely read body — it may be empty or non-JSON (HTML error page, 404, etc.)
+        const text = await response.text();
+        let message = 'Registration failed';
+        try {
+          const data = JSON.parse(text);
+          message = data.message || data.error || message;
+        } catch {
+          // Body was not JSON — use status text or raw body if short
+          message = text.trim().slice(0, 120) || response.statusText || message;
+        }
+        throw new Error(message);
       }
 
       navigate('/login');
