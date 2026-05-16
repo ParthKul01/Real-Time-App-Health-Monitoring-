@@ -9,7 +9,8 @@ exports.register = async (req, res) => {
     await User.create(name, email, hashedPassword);
     res.status(201).json({ message: "User credentials stored in RDS" });
   } catch (error) {
-    res.status(500).json({ message: "Error registering user", error });
+    console.error("❌ Registration Database Error:", error);
+    res.status(500).json({ message: "Error registering user", error: error.message || error });
   }
 };
 

@@ -18,7 +18,6 @@ function Dashboard() {
   );
   const [lastChecked, setLastChecked] = useState(new Date().toISOString());
 
-  // Simulation logic for real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
       setServices(prev =>
@@ -55,7 +54,7 @@ function Dashboard() {
       target: newMonitor.target,
       status: 'up',
       latency: 0,
-      uptime: 100
+      uptime: 100,
     };
 
     setServices([...services, createdMonitor]);
@@ -73,7 +72,8 @@ function Dashboard() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header with Add Button */}
+
+        {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-[#B0BEC5] pb-6 gap-4">
           <div>
             <h1 className="text-3xl font-black text-[#37474F]">Infrastructure Health</h1>
@@ -85,11 +85,11 @@ function Dashboard() {
             onClick={() => setIsModalOpen(true)}
             className="bg-[#37474F] text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-[#546E7A] transition-all active:scale-95"
           >
-            + Add New Monitor
+            Add New Monitor
           </button>
         </div>
 
-        {/* Summary badges */}
+        {/* Status Summary */}
         <div className="flex flex-wrap gap-3 mb-8">
           <span className="flex items-center gap-2 bg-white border border-[#90A4AE] text-[#37474F] text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
@@ -105,7 +105,7 @@ function Dashboard() {
           </span>
         </div>
 
-        {/* Grid Section */}
+        {/* Service Monitors Grid */}
         <section className="mb-12">
           <h2 className="text-sm font-black text-[#546E7A] mb-6 uppercase tracking-[0.2em]">Service Monitors</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -122,7 +122,7 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Chart Section */}
+        {/* Latency History Charts */}
         <section>
           <h2 className="text-sm font-black text-[#546E7A] mb-6 uppercase tracking-[0.2em]">Latency History</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -143,17 +143,19 @@ function Dashboard() {
         </section>
       </main>
 
-      {/* --- ADD MONITOR MODAL --- */}
+      {/* Add Monitor Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#37474F]/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-[#B0BEC5] overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-[#B0BEC5] overflow-hidden">
             <div className="p-8">
               <h2 className="text-2xl font-black text-[#37474F] mb-2">New Monitor</h2>
               <p className="text-[#546E7A] text-sm mb-6 font-medium">Track a new IP address or URL.</p>
 
               <form onSubmit={handleAddMonitor} className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-[#90A4AE] uppercase tracking-widest mb-2 ml-1">Friendly Name</label>
+                  <label className="block text-[10px] font-black text-[#90A4AE] uppercase tracking-widest mb-2 ml-1">
+                    Friendly Name
+                  </label>
                   <input
                     required
                     type="text"
@@ -165,7 +167,9 @@ function Dashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-[#90A4AE] uppercase tracking-widest mb-2 ml-1">Target (IP or URL)</label>
+                  <label className="block text-[10px] font-black text-[#90A4AE] uppercase tracking-widest mb-2 ml-1">
+                    Target (IP or URL)
+                  </label>
                   <input
                     required
                     type="text"
