@@ -4,6 +4,8 @@ import MonitorCard from '../components/MonitorCard';
 import LatencyChart from '../components/LatencyChart';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 function Dashboard() {
   const { token } = useAuth();
 
@@ -19,7 +21,7 @@ function Dashboard() {
   // ─── Fetch real monitor data from the backend ───────────────────────────────
   const fetchMonitors = useCallback(async () => {
     try {
-      const res = await fetch('/api/monitors', {
+      const res = await fetch(`${API_URL}/api/monitors`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;
@@ -56,7 +58,7 @@ function Dashboard() {
     setIsAdding(true);
 
     try {
-      const res = await fetch('/api/monitors', {
+      const res = await fetch(`${API_URL}/api/monitors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +88,7 @@ function Dashboard() {
   // ─── Delete a monitor ────────────────────────────────────────────────────────
   const handleDeleteMonitor = async (id) => {
     try {
-      const res = await fetch(`/api/monitors/${id}`, {
+      const res = await fetch(`${API_URL}/api/monitors/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

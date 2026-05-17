@@ -23,7 +23,8 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: form.email, password: form.password }),
