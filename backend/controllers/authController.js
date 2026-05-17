@@ -2,12 +2,30 @@ const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const db = require('../config/db');
+
+const DEFAULT_MONITORS = [
+  { title: 'GitHub', target: 'https://github.com' },
+  { title: 'Google', target: 'https://www.google.com' },
+  { title: 'Google DNS', target: '8.8.8.8' }
+];
+
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create(name, email, hashedPassword);
-    res.status(201).json({ message: "User credentials stored in RDS" });
+    const result = await User.create(name, email, hashedPassword);
+    const newUserId = result.insertId;
+
+    // Automatically assign default monitors to the new user
+    for (const monitor of DEFAULT_MONITORS) {
+      await db.execute(
+        'INSERT INTO monitors (user_id, title, target, status, last_latency) VALUES (?, ?, ?, ?, ?)',
+        [newUserId, monitor.title, monitor.target, 'pending', 0]
+      );
+    }
+
+    res.status(201).json({ message: "User credentials stored in RDS and default monitors added" });
   } catch (error) {
     console.error("❌ Registration Database Error:", error);
     res.status(500).json({ message: "Error registering user", error: error.message || error });
