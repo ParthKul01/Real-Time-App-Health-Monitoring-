@@ -5,6 +5,7 @@ const cors = require('cors');
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
+const monitorsRoutes = require('./routes/monitorsRoutes');
 
 // Import the Database Pool and the Monitoring Engine
 const db = require('./config/db');
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/monitors', monitorsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

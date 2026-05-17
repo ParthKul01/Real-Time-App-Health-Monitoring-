@@ -105,8 +105,10 @@ function startMonitoringEngine(dbPool, intervalMs = 15000) {
  */
 async function runMonitoringCycle(dbPool) {
     try {
-        // 1. Fetch current live targets registered from the AWS RDS monitors table
-        const [monitors] = await dbPool.execute('SELECT id, title, target FROM monitors');
+        // 1. Fetch all live targets registered in AWS RDS monitors table
+        const [monitors] = await dbPool.execute(
+            'SELECT id, title, target, status FROM monitors'
+        );
 
         if (monitors.length === 0) {
             console.log('[ENGINE] No target monitors registered in RDS yet. Awaiting configuration...');
@@ -120,7 +122,7 @@ async function runMonitoringCycle(dbPool) {
             // Run the network health analysis
             const { status, latency } = await checkTargetHealth(monitor.target);
 
-            // 3. Immediately commit the fresh metrics right back to AWS RDS MySQL database
+            // 3. Commit fresh metrics back to AWS RDS
             await dbPool.execute(
                 'UPDATE monitors SET status = ?, last_latency = ? WHERE id = ?',
                 [status, latency, monitor.id]
@@ -129,7 +131,7 @@ async function runMonitoringCycle(dbPool) {
             console.log(`📊 [MONITOR] "${monitor.title}" (${monitor.target}) -> Status: ${status.toUpperCase()} | Latency: ${latency}ms`);
         });
 
-        // Await execution resolution for all targets in this batch
+        // Await resolution for all targets in this batch
         await Promise.all(monitoringPromises);
         console.log(`✔ [ENGINE] Completed monitoring cycle pass at: ${new Date().toLocaleTimeString()}`);
 
